@@ -4,9 +4,8 @@ import axios from "axios";
 import moment from "moment";
 import { saturate } from "polished";
 import { theme } from "./components/global/theme";
-import logo from "./logo.svg";
 
-const { black, yellow, grey, white } = theme;
+const { black, yellow, white } = theme;
 
 const StyledApp = styled.div`
 	align-items: center;
