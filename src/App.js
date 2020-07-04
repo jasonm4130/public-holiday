@@ -16,20 +16,26 @@ const StyledApp = styled.div`
 	min-width: 100vw;
 	text-align: center;
 	.title {
-		font-size: 5rem;
+		font-size: 2.5rem;
 		margin-bottom: 0.25rem;
 	}
 	.date {
-		font-size: 2rem;
+		font-size: 4rem;
 		margin-bottom: 0.25rem;
 		margin-top: 0.25rem;
 	}
 	.holidayName {
-		font-size: 3.5rem;
+		font-size: 2.5rem;
 		margin-top: 0.25rem;
 	}
 	.infoText {
 		font-size: 2rem;
+		font-weight: bold;
+	}
+	.textContent {
+		max-width: 32rem;
+		text-align: center;
+		margin: 0 auto;
 	}
 `;
 

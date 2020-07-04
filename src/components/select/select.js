@@ -10,6 +10,8 @@ const StyledSelect = styled.div`
 	height: 47.5px;
 	background: ${white};
 	border-radius: 0.25rem;
+	max-width: 24rem;
+	margin: 2rem auto;
 
 	&:after {
 		content: "";
@@ -87,7 +89,8 @@ export default function Select(props) {
 	const { setLocation } = props;
 	return (
 		<>
-			<h4 className="infoText">Please select your state</h4>
+			<h1 className="title">Find your next public holiday</h1>
+			<span className="infoText">Please select your state</span>
 			<StyledSelect>
 				<select selected="default" onChange={(e) => setLocation(e.currentTarget.value)}>
 					<option value="default">Select a state</option>
@@ -101,6 +104,20 @@ export default function Select(props) {
 					<option value="wa">Western Australia</option>
 				</select>
 			</StyledSelect>
+			<div className="textContent">
+				<p>
+					Ever feel like you need a break but not sure if you should take a day off or just wait it out till
+					your next public holiday?
+				</p>
+				<p>
+					To then find yourself trawling through each month of some random calendar to try and figure out when
+					your next public holiday is?
+				</p>
+				<p>
+					This site is for you, simply select your state, and we will make a call to the open government api
+					for public holidays and let you know when your next day off will be.
+				</p>
+			</div>
 		</>
 	);
 }
