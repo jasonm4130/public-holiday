@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
-import axios from "axios";
-import moment from "moment";
 import { theme } from "./components/global/theme";
 import Select from "./components/select/select";
 import HolidayDisplay from "./components/holiday-display/holiday-display";
