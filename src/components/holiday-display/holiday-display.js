@@ -4,6 +4,7 @@ import axios from "axios";
 
 export default function HolidayDisplay(props) {
 	const [dates, setDates] = useState([]);
+	const [datesReturned, setDatesReturned] = useState(false);
 	const { location } = props;
 
 	useEffect(() => {
@@ -23,13 +24,14 @@ export default function HolidayDisplay(props) {
 			.get(endpoint)
 			.then((response) => {
 				setDates(response.data.result.records);
+				setDatesReturned(true);
 			})
 			.catch((error) => {
 				console.error(error);
 			});
 	}, [location]);
 
-	if (dates.length !== 0) {
+	if (datesReturned) {
 		// Get todays date
 		const today = moment();
 
@@ -37,6 +39,7 @@ export default function HolidayDisplay(props) {
 		const upcomingHolidays = dates.filter(
 			(date) => moment(date.Date).isSameOrAfter(today) && date.Jurisdiction === location
 		);
+
 		const nextHoliday = upcomingHolidays.reduce((a, b) => (moment(a.Date) < moment(b.Date) ? a : b));
 
 		return (

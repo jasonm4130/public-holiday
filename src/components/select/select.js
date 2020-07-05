@@ -92,7 +92,13 @@ export default function Select(props) {
 			<h1 className="title">Find your next public holiday</h1>
 			<span className="infoText">Please select your state</span>
 			<StyledSelect>
-				<select selected="default" onChange={(e) => setLocation(e.currentTarget.value)}>
+				<select
+					selected="default"
+					onChange={(e) => {
+						setLocation(e.currentTarget.value);
+						window.location.hash = e.currentTarget.value;
+					}}
+				>
 					<option value="default">Select a state</option>
 					<option value="act">Australian Capital Territory</option>
 					<option value="nsw">New South Wales</option>

@@ -40,7 +40,8 @@ const StyledApp = styled.div`
 `;
 
 function App() {
-	const [location, setLocation] = useState(null);
+	const locationHash = window.location.hash !== "" ? window.location.hash.substring(1) : null;
+	const [location, setLocation] = useState(locationHash);
 
 	function Display() {
 		if (location) {
