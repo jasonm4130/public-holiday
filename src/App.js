@@ -45,7 +45,7 @@ function App() {
 
 	function Display() {
 		if (location) {
-			return <HolidayDisplay location={location} />;
+			return <HolidayDisplay location={location} setLocation={setLocation} />;
 		}
 		return <Select setLocation={setLocation} />;
 	}
