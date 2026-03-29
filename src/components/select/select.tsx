@@ -180,11 +180,15 @@ export function LocationSelect({ onSelect, detectedCountryCode, detecting }: Loc
 
       {/* Country selector */}
       <div className="mx-auto max-w-sm">
-        <label className="text-muted mb-2 block text-left text-xs font-medium tracking-wider uppercase">
+        <label
+          htmlFor="country-select"
+          className="text-muted mb-2 block text-left text-xs font-medium tracking-wider uppercase"
+        >
           {detectedCountryName ? "Or select a different country" : "Select your country"}
         </label>
         <div className="relative">
           <select
+            id="country-select"
             defaultValue=""
             onChange={(e) => {
               if (e.target.value) handleCountrySelect(e.target.value);
@@ -208,11 +212,11 @@ export function LocationSelect({ onSelect, detectedCountryCode, detecting }: Loc
         )}
       </div>
 
-      <div className="text-fg/50 mx-auto mt-10 max-w-md text-center text-sm leading-relaxed">
+      <div className="text-muted mx-auto mt-10 max-w-md text-center text-sm leading-relaxed">
         <p>
           See your next public holiday instantly, or use the{" "}
-          <strong className="text-accent-fg/80">Leave Optimizer</strong> to find the best days to
-          take off for maximum time away.
+          <strong className="text-accent-fg">Leave Optimizer</strong> to find the best days to take
+          off for maximum time away.
         </p>
       </div>
     </div>

@@ -211,7 +211,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="text-muted/60 px-4 py-4 text-center text-xs">
+      <footer className="text-muted px-4 py-4 text-center text-xs">
         Holiday data from{" "}
         <a
           href="https://date.nager.at/"

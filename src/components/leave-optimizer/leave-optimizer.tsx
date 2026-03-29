@@ -70,8 +70,8 @@ export function LeaveOptimizer({ countryCode, countryName, regionCode }: LeaveOp
       <p className="text-muted mb-1 text-sm font-medium tracking-widest uppercase">
         {locationLabel}
       </p>
-      <h1 className="text-fg/80 mb-2 text-2xl font-bold">Optimize Your Leave</h1>
-      <p className="text-fg/50 mb-6 text-sm">
+      <h1 className="text-fg mb-2 text-2xl font-bold">Optimize Your Leave</h1>
+      <p className="text-muted mb-6 text-sm">
         Find the best days to take off for maximum consecutive time away
       </p>
 
@@ -125,7 +125,7 @@ export function LeaveOptimizer({ countryCode, countryName, regionCode }: LeaveOp
               className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-sm font-bold transition-colors ${
                 numberOfBlocks === n
                   ? "bg-accent text-ocean-deep"
-                  : "bg-muted/20 text-fg/60 hover:bg-muted/30"
+                  : "bg-muted/20 text-muted hover:bg-muted/30"
               }`}
             >
               {n}
@@ -153,7 +153,7 @@ export function LeaveOptimizer({ countryCode, countryName, regionCode }: LeaveOp
           ))}
         </div>
       ) : (
-        <p className="text-fg/60">No optimization found for this configuration.</p>
+        <p className="text-muted">No optimization found for this configuration.</p>
       )}
     </div>
   );
@@ -217,11 +217,7 @@ function OptionCard({
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <div
-              className={`text-2xl font-extrabold ${
-                rank === 1 ? "text-accent-fg" : "text-accent-fg/70"
-              }`}
-            >
+            <div className="text-accent-fg text-2xl font-extrabold">
               {option.overallEfficiency.toFixed(1)}x
             </div>
             <div className="text-muted text-[10px]">return</div>
@@ -296,7 +292,7 @@ function BlockDetail({
                 : day.type === "leave"
                   ? "bg-accent/30 text-fg"
                   : day.type === "weekend"
-                    ? "bg-muted/30 text-fg/60"
+                    ? "bg-muted/30 text-muted"
                     : "bg-fg/5 text-fg/30"
             }`}
           >
@@ -318,7 +314,7 @@ function BlockDetail({
       </div>
 
       {block.holidays.length > 0 && (
-        <p className="text-fg/50 mt-3 text-xs">
+        <p className="text-muted mt-3 text-xs">
           Includes: {block.holidays.map((h) => h.localName).join(", ")}
         </p>
       )}

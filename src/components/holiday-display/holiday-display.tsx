@@ -77,7 +77,7 @@ export function HolidayDisplay({
       <p className="text-muted mb-1 text-sm font-medium tracking-widest uppercase">
         {locationLabel}
       </p>
-      <h1 className="text-fg/80 mb-4 text-2xl font-bold">Your next holiday</h1>
+      <h1 className="text-fg mb-4 text-2xl font-bold">Your next holiday</h1>
 
       {/* Countdown */}
       {countdown && (
