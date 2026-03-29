@@ -1,16 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#19191A"/>
+  <defs>
+    <linearGradient id="cal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4D03F"/>
+      <stop offset="100%" stop-color="#D4AC0D"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="108" fill="#19191A"/>
   <!-- Calendar body -->
-  <rect x="96" y="144" width="320" height="272" rx="24" fill="#F1C40F"/>
-  <!-- Calendar top bar -->
-  <rect x="96" y="144" width="320" height="72" rx="24" fill="#F1C40F"/>
-  <rect x="96" y="192" width="320" height="24" fill="#F1C40F"/>
-  <!-- Calendar rings -->
-  <rect x="168" y="112" width="24" height="64" rx="12" fill="#ECF0F1"/>
-  <rect x="320" y="112" width="24" height="64" rx="12" fill="#ECF0F1"/>
-  <!-- Calendar header dark strip -->
-  <rect x="96" y="144" width="320" height="72" rx="24" fill="#19191A" opacity="0.15"/>
-  <rect x="96" y="192" width="320" height="24" fill="#19191A" opacity="0.15"/>
-  <!-- Star/holiday marker -->
-  <polygon points="256,260 270,300 312,300 278,324 290,364 256,340 222,364 234,324 200,300 242,300" fill="#19191A"/>
+  <rect x="88" y="152" width="336" height="268" rx="28" fill="url(#cal)"/>
+  <!-- Calendar header -->
+  <rect x="88" y="152" width="336" height="80" rx="28" fill="#19191A" opacity="0.12"/>
+  <rect x="88" y="208" width="336" height="24" fill="#19191A" opacity="0.12"/>
+  <!-- Rings -->
+  <rect x="168" y="116" width="28" height="72" rx="14" fill="#ECF0F1"/>
+  <rect x="316" y="116" width="28" height="72" rx="14" fill="#ECF0F1"/>
+  <!-- Checkmark (next holiday confirmed) -->
+  <path d="M200 320 L244 364 L328 272" fill="none" stroke="#19191A" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

@@ -67,7 +67,7 @@ export default function App() {
         >
           <img src="/logo.svg" alt="" className="h-8 w-8" />
           <span className="text-sm font-bold tracking-wide">
-            Public Holiday<span className="text-brand-grey">.au</span>
+            My Next <span className="text-brand-yellow">Public Holiday</span>
           </span>
         </button>
         {selectedState && (

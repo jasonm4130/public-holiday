@@ -1,11 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#19191A"/>
-  <rect x="6" y="9" width="20" height="17" rx="2" fill="#F1C40F"/>
-  <rect x="6" y="9" width="20" height="5" rx="2" fill="#F1C40F"/>
-  <rect x="6" y="12" width="20" height="2" fill="#F1C40F"/>
-  <rect x="6" y="9" width="20" height="5" rx="2" fill="#19191A" opacity="0.15"/>
-  <rect x="6" y="12" width="20" height="2" fill="#19191A" opacity="0.15"/>
-  <rect x="10.5" y="7" width="1.5" height="4" rx="0.75" fill="#ECF0F1"/>
-  <rect x="20" y="7" width="1.5" height="4" rx="0.75" fill="#ECF0F1"/>
-  <polygon points="16,16.5 17,19 19.5,19 17.5,20.5 18.2,23 16,21.5 13.8,23 14.5,20.5 12.5,19 15,19" fill="#19191A"/>
+  <rect width="32" height="32" rx="7" fill="#19191A"/>
+  <rect x="5" y="9" width="22" height="18" rx="3" fill="#F1C40F"/>
+  <rect x="5" y="9" width="22" height="6" rx="3" fill="#19191A" opacity="0.12"/>
+  <rect x="5" y="13" width="22" height="2" fill="#19191A" opacity="0.12"/>
+  <rect x="10" y="7" width="2" height="5" rx="1" fill="#ECF0F1"/>
+  <rect x="20" y="7" width="2" height="5" rx="1" fill="#ECF0F1"/>
+  <path d="M12 21 L15 24 L21 17" fill="none" stroke="#19191A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
