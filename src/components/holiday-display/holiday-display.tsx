@@ -1,16 +1,23 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import type { AustralianStateCode, PublicHoliday } from "../../types/holiday";
+import type { PublicHoliday } from "../../types/holiday";
 import { getUpcomingHolidays } from "../../services/holidays";
-import { getStateByCode } from "../../utils/states";
+import { getLocationLabel } from "../../utils/countries";
 import { useCountdown } from "../../hooks/useCountdown";
 
 interface HolidayDisplayProps {
-  stateCode: AustralianStateCode;
+  countryCode: string;
+  countryName: string;
+  regionCode?: string;
   onBack: () => void;
 }
 
-export function HolidayDisplay({ stateCode, onBack }: HolidayDisplayProps) {
+export function HolidayDisplay({
+  countryCode,
+  countryName,
+  regionCode,
+  onBack,
+}: HolidayDisplayProps) {
   const [holidays, setHolidays] = useState<PublicHoliday[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,21 +26,24 @@ export function HolidayDisplay({ stateCode, onBack }: HolidayDisplayProps) {
     setHolidays(null);
     setError(null);
 
-    getUpcomingHolidays(stateCode)
+    getUpcomingHolidays(countryCode, regionCode)
       .then((data) => {
         if (!cancelled) setHolidays(data);
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load holidays");
+        if (!cancelled)
+          setError(err instanceof Error ? err.message : "Failed to load holidays");
       });
 
     return () => {
       cancelled = true;
     };
-  }, [stateCode]);
+  }, [countryCode, regionCode]);
 
   const nextHoliday = holidays?.[0] ?? null;
   const countdown = useCountdown(nextHoliday?.date ?? null);
+
+  const locationLabel = getLocationLabel(countryName, regionCode);
 
   if (error) {
     return (
@@ -63,12 +73,10 @@ export function HolidayDisplay({ stateCode, onBack }: HolidayDisplayProps) {
     );
   }
 
-  const stateName = getStateByCode(stateCode).name;
-
   return (
     <div className="animate-fade-in">
       <p className="mb-1 text-sm font-medium tracking-widest text-brand-grey uppercase">
-        {stateName}
+        {locationLabel}
       </p>
       <h1 className="mb-4 text-2xl font-bold text-brand-white/80">Your next holiday</h1>
 
@@ -151,7 +159,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
       className="cursor-pointer rounded-lg bg-brand-grey/20 px-5 py-2.5 text-sm font-bold text-brand-yellow
                  transition-all hover:bg-brand-grey/30 hover:shadow-lg"
     >
-      ← Change state
+      ← Change location
     </button>
   );
 }

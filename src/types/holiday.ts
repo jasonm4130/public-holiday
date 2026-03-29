@@ -18,20 +18,23 @@ export interface PublicHoliday {
   counties: string[];
 }
 
-export type AustralianStateCode =
-  | "ACT"
-  | "NSW"
-  | "NT"
-  | "QLD"
-  | "SA"
-  | "TAS"
-  | "VIC"
-  | "WA";
-
-export interface AustralianState {
-  code: AustralianStateCode;
+export interface Country {
+  countryCode: string;
   name: string;
-  nagerCode: string;
+}
+
+/** A sub-region within a country (e.g. AU-QLD, US-CA, DE-BY) */
+export interface Region {
+  code: string;
+  name: string;
+}
+
+/** Fully resolved location: country + optional region */
+export interface HolidayLocation {
+  countryCode: string;
+  countryName: string;
+  regionCode?: string;
+  regionName?: string;
 }
 
 export interface LeaveBlock {

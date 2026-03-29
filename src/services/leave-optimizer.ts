@@ -16,19 +16,19 @@ function isNonWorkDay(date: Date, holidays: PublicHoliday[]): boolean {
 }
 
 /**
- * Find the best continuous blocks of days off for a given leave budget.
+ * Use ALL available leave days for maximum consecutive time off.
  *
- * Every day within a returned block is guaranteed to be either a weekend,
- * a public holiday, or a leave day — no uncovered work-day gaps.
+ * Single block (default): finds the longest unbroken stretch achievable
+ * by spending exactly `leaveDays` workdays as leave.
  *
- * For each possible number of leave days (1..budget), finds the longest
- * unbroken stretch of days off achievable by spending exactly that many
- * leave days on workdays within the stretch.
+ * Multiple blocks: distributes leave across N non-overlapping blocks,
+ * each maximising consecutive days off.
  */
 export function optimizeLeave(
   holidays: PublicHoliday[],
   leaveDays: number,
-  fromDate?: Date
+  fromDate?: Date,
+  numberOfBlocks: number = 1
 ): LeaveBlock[] {
   const start = fromDate ?? new Date();
   const end = addDays(start, 365);
@@ -38,68 +38,133 @@ export function optimizeLeave(
   // Classify each day as work (true) or free (false)
   const isWork = allDays.map((d) => !isNonWorkDay(d, holidays));
 
-  // For each leave-day count k, track the longest continuous block
-  const bestForK = new Map<
-    number,
-    { left: number; right: number; total: number }
-  >();
+  if (numberOfBlocks <= 1) {
+    return findSingleBlock(allDays, isWork, holidays, leaveDays, n);
+  }
+  return findMultipleBlocks(allDays, isWork, holidays, leaveDays, numberOfBlocks, n);
+}
 
-  // O(n²) scan: for every starting day, extend rightward counting workdays.
-  // When workdays exceed budget, stop. Record the best block for each k seen.
+/** Find the single longest block using exactly `budget` leave days. */
+function findSingleBlock(
+  allDays: Date[],
+  isWork: boolean[],
+  holidays: PublicHoliday[],
+  budget: number,
+  n: number
+): LeaveBlock[] {
+  let bestLeft = -1;
+  let bestRight = -1;
+  let bestTotal = 0;
+
   for (let i = 0; i < n; i++) {
     let workCount = 0;
     for (let j = i; j < n; j++) {
       if (isWork[j]) workCount++;
-      if (workCount > leaveDays) break;
-      if (workCount === 0) continue;
-
-      const total = j - i + 1;
-      const existing = bestForK.get(workCount);
-      if (!existing || total > existing.total) {
-        bestForK.set(workCount, { left: i, right: j, total });
+      if (workCount > budget) break;
+      if (workCount === budget) {
+        const total = j - i + 1;
+        if (total > bestTotal) {
+          bestTotal = total;
+          bestLeft = i;
+          bestRight = j;
+        }
       }
     }
   }
 
-  // Build LeaveBlock results sorted by efficiency
-  const results: LeaveBlock[] = [];
-  for (const [, val] of bestForK) {
-    const blockStart = allDays[val.left]!;
-    const blockEnd = allDays[val.right]!;
+  if (bestLeft === -1) return [];
+  return [buildLeaveBlock(allDays, isWork, holidays, bestLeft, bestRight)];
+}
 
-    const leaveDates: Date[] = [];
-    for (let i = val.left; i <= val.right; i++) {
-      if (isWork[i]) leaveDates.push(allDays[i]!);
+/** Distribute leave across N non-overlapping blocks. */
+function findMultipleBlocks(
+  allDays: Date[],
+  isWork: boolean[],
+  holidays: PublicHoliday[],
+  budget: number,
+  numBlocks: number,
+  n: number
+): LeaveBlock[] {
+  const results: LeaveBlock[] = [];
+  const blocked = new Array<boolean>(n).fill(false);
+  let remaining = budget;
+
+  for (let b = 0; b < numBlocks && remaining > 0; b++) {
+    const blocksLeft = numBlocks - b;
+    const budgetForThis = Math.ceil(remaining / blocksLeft);
+
+    let bestLeft = -1;
+    let bestRight = -1;
+    let bestTotal = 0;
+
+    for (let i = 0; i < n; i++) {
+      if (blocked[i]) continue;
+      let workCount = 0;
+      for (let j = i; j < n; j++) {
+        if (blocked[j]) break;
+        if (isWork[j]) workCount++;
+        if (workCount > budgetForThis) break;
+        if (workCount === budgetForThis) {
+          const total = j - i + 1;
+          if (total > bestTotal) {
+            bestTotal = total;
+            bestLeft = i;
+            bestRight = j;
+          }
+        }
+      }
     }
 
-    const totalDaysOff = val.total;
-    const used = leaveDates.length;
-    const efficiency = totalDaysOff / used;
-    const includedHolidays = holidays.filter(
-      (h) => h.date >= blockStart && h.date <= blockEnd
-    );
+    if (bestLeft === -1) break;
 
-    const dateRange = `${format(blockStart, "d MMM")} – ${format(blockEnd, "d MMM yyyy")}`;
-    const names = includedHolidays.map((h) => h.localName).join(", ");
-    const includesStr = names ? `. Includes: ${names}` : "";
-    const description = `${dateRange}: Take ${used} day${used > 1 ? "s" : ""} off → ${totalDaysOff} days total (${efficiency.toFixed(1)}x)${includesStr}`;
-
-    results.push({
-      startDate: blockStart,
-      endDate: blockEnd,
-      leaveDaysUsed: used,
-      totalDaysOff,
-      efficiency,
-      leaveDates,
-      holidays: includedHolidays,
-      description,
-    });
+    let used = 0;
+    for (let i = bestLeft; i <= bestRight; i++) {
+      blocked[i] = true;
+      if (isWork[i]) used++;
+    }
+    remaining -= used;
+    results.push(buildLeaveBlock(allDays, isWork, holidays, bestLeft, bestRight));
   }
 
-  results.sort((a, b) => {
-    if (b.efficiency !== a.efficiency) return b.efficiency - a.efficiency;
-    return b.totalDaysOff - a.totalDaysOff;
-  });
+  results.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+  return results;
+}
 
-  return results.slice(0, 5);
+function buildLeaveBlock(
+  allDays: Date[],
+  isWork: boolean[],
+  holidays: PublicHoliday[],
+  left: number,
+  right: number
+): LeaveBlock {
+  const blockStart = allDays[left]!;
+  const blockEnd = allDays[right]!;
+
+  const leaveDates: Date[] = [];
+  for (let i = left; i <= right; i++) {
+    if (isWork[i]) leaveDates.push(allDays[i]!);
+  }
+
+  const totalDaysOff = right - left + 1;
+  const used = leaveDates.length;
+  const efficiency = used > 0 ? totalDaysOff / used : 0;
+  const includedHolidays = holidays.filter(
+    (h) => h.date >= blockStart && h.date <= blockEnd
+  );
+
+  const dateRange = `${format(blockStart, "d MMM")} – ${format(blockEnd, "d MMM yyyy")}`;
+  const names = includedHolidays.map((h) => h.localName).join(", ");
+  const includesStr = names ? `. Includes: ${names}` : "";
+  const description = `${dateRange}: Take ${used} day${used > 1 ? "s" : ""} off → ${totalDaysOff} days total (${efficiency.toFixed(1)}x)${includesStr}`;
+
+  return {
+    startDate: blockStart,
+    endDate: blockEnd,
+    leaveDaysUsed: used,
+    totalDaysOff,
+    efficiency,
+    leaveDates,
+    holidays: includedHolidays,
+    description,
+  };
 }

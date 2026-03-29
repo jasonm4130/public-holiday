@@ -1,42 +1,50 @@
 import { useEffect, useState, useMemo } from "react";
 import { format, isWeekend } from "date-fns";
-import type { AustralianStateCode, PublicHoliday, LeaveBlock } from "../../types/holiday";
+import type { PublicHoliday, LeaveBlock } from "../../types/holiday";
 import { getUpcomingHolidays } from "../../services/holidays";
-import { getStateByCode } from "../../utils/states";
+import { getLocationLabel } from "../../utils/countries";
 import { optimizeLeave } from "../../services/leave-optimizer";
 
 interface LeaveOptimizerProps {
-  stateCode: AustralianStateCode;
+  countryCode: string;
+  countryName: string;
+  regionCode?: string;
   onBack?: () => void;
 }
 
-export function LeaveOptimizer({ stateCode }: LeaveOptimizerProps) {
+export function LeaveOptimizer({
+  countryCode,
+  countryName,
+  regionCode,
+}: LeaveOptimizerProps) {
   const [holidays, setHolidays] = useState<PublicHoliday[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [leaveDays, setLeaveDays] = useState(3);
+  const [leaveDays, setLeaveDays] = useState(10);
+  const [numberOfBlocks, setNumberOfBlocks] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
     setHolidays(null);
     setError(null);
 
-    getUpcomingHolidays(stateCode)
+    getUpcomingHolidays(countryCode, regionCode)
       .then((data) => {
         if (!cancelled) setHolidays(data);
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load holidays");
+        if (!cancelled)
+          setError(err instanceof Error ? err.message : "Failed to load holidays");
       });
 
     return () => {
       cancelled = true;
     };
-  }, [stateCode]);
+  }, [countryCode, regionCode]);
 
   const results = useMemo(() => {
     if (!holidays) return null;
-    return optimizeLeave(holidays, leaveDays);
-  }, [holidays, leaveDays]);
+    return optimizeLeave(holidays, leaveDays, undefined, numberOfBlocks);
+  }, [holidays, leaveDays, numberOfBlocks]);
 
   if (error) {
     return (
@@ -60,12 +68,12 @@ export function LeaveOptimizer({ stateCode }: LeaveOptimizerProps) {
     );
   }
 
-  const stateName = getStateByCode(stateCode).name;
+  const locationLabel = getLocationLabel(countryName, regionCode);
 
   return (
     <div className="animate-fade-in">
       <p className="mb-1 text-sm font-medium tracking-widest text-brand-grey uppercase">
-        {stateName}
+        {locationLabel}
       </p>
       <h1 className="mb-2 text-2xl font-bold text-brand-white/80">Optimize Your Leave</h1>
       <p className="mb-6 text-sm text-brand-white/50">
@@ -73,12 +81,12 @@ export function LeaveOptimizer({ stateCode }: LeaveOptimizerProps) {
       </p>
 
       {/* Leave days input */}
-      <div className="mx-auto mb-8 max-w-xs rounded-xl border border-brand-yellow/10 bg-brand-yellow/5 p-5">
+      <div className="mx-auto mb-4 max-w-xs rounded-xl border border-brand-yellow/10 bg-brand-yellow/5 p-5">
         <label
           htmlFor="leave-days"
           className="mb-3 block text-xs font-bold tracking-wider text-brand-grey uppercase"
         >
-          Available leave days
+          Total leave days
         </label>
         <div className="flex items-center justify-center gap-4">
           <button
@@ -91,13 +99,13 @@ export function LeaveOptimizer({ stateCode }: LeaveOptimizerProps) {
             id="leave-days"
             type="range"
             min={1}
-            max={15}
+            max={25}
             value={leaveDays}
             onChange={(e) => setLeaveDays(Number(e.target.value))}
             className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-brand-grey/30 accent-brand-yellow"
           />
           <button
-            onClick={() => setLeaveDays((d) => Math.min(15, d + 1))}
+            onClick={() => setLeaveDays((d) => Math.min(25, d + 1))}
             className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-brand-grey/20 text-lg font-bold text-brand-yellow transition-colors hover:bg-brand-grey/30"
           >
             +
@@ -109,11 +117,56 @@ export function LeaveOptimizer({ stateCode }: LeaveOptimizerProps) {
         </div>
       </div>
 
+      {/* Number of holidays */}
+      <div className="mx-auto mb-8 max-w-xs rounded-xl border border-brand-yellow/10 bg-brand-yellow/5 p-5">
+        <label className="mb-3 block text-xs font-bold tracking-wider text-brand-grey uppercase">
+          Number of holidays
+        </label>
+        <div className="flex items-center justify-center gap-2">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              onClick={() => setNumberOfBlocks(n)}
+              className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-sm font-bold transition-colors ${
+                numberOfBlocks === n
+                  ? "bg-brand-yellow text-brand-black"
+                  : "bg-brand-grey/20 text-brand-white/60 hover:bg-brand-grey/30"
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-center text-xs text-brand-grey">
+          {numberOfBlocks === 1
+            ? "One big break"
+            : `Split into ${numberOfBlocks} separate holidays`}
+        </p>
+      </div>
+
       {/* Results */}
       {results && results.length > 0 ? (
         <div className="space-y-4">
+          {results.length > 1 && (
+            <div className="mx-auto max-w-sm rounded-lg border border-brand-yellow/10 bg-brand-yellow/5 px-4 py-3 text-center text-sm">
+              <span className="text-brand-yellow font-bold">
+                {results.reduce((s, b) => s + b.leaveDaysUsed, 0)} leave days
+              </span>
+              <span className="text-brand-white/50"> → </span>
+              <span className="text-brand-yellow font-bold">
+                {results.reduce((s, b) => s + b.totalDaysOff, 0)} days off
+              </span>
+              <span className="text-brand-white/50"> across {results.length} holidays</span>
+            </div>
+          )}
           {results.map((block, i) => (
-            <LeaveBlockCard key={i} block={block} rank={i + 1} holidays={holidays} />
+            <LeaveBlockCard
+              key={i}
+              block={block}
+              rank={i + 1}
+              holidays={holidays}
+              single={results.length === 1}
+            />
           ))}
         </div>
       ) : (
@@ -127,12 +180,14 @@ function LeaveBlockCard({
   block,
   rank,
   holidays,
+  single,
 }: {
   block: LeaveBlock;
   rank: number;
   holidays: PublicHoliday[];
+  single: boolean;
 }) {
-  const [expanded, setExpanded] = useState(rank === 1);
+  const [expanded, setExpanded] = useState(rank <= 3);
 
   return (
     <div
@@ -147,13 +202,15 @@ function LeaveBlockCard({
         className="flex w-full cursor-pointer items-start justify-between text-left"
       >
         <div className="flex items-center gap-3">
-          <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
-            rank === 1
-              ? "bg-brand-yellow text-brand-black"
-              : "bg-brand-grey/30 text-brand-yellow"
-          }`}>
-            {rank}
-          </span>
+          {!single && (
+            <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+              rank === 1
+                ? "bg-brand-yellow text-brand-black"
+                : "bg-brand-grey/30 text-brand-yellow"
+            }`}>
+              {rank}
+            </span>
+          )}
           <div>
             <div className="text-base font-bold sm:text-lg">
               {format(block.startDate, "d MMM")} – {format(block.endDate, "d MMM")}

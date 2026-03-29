@@ -1,58 +1,89 @@
 import { useState, useEffect } from "react";
-import type { AustralianStateCode } from "./types/holiday";
-import { StateSelect } from "./components/select/select";
+import type { HolidayLocation } from "./types/holiday";
+import { LocationSelect } from "./components/select/select";
 import { HolidayDisplay } from "./components/holiday-display/holiday-display";
 import { LeaveOptimizer } from "./components/leave-optimizer/leave-optimizer";
-import { detectState } from "./services/geolocation";
+import { detectCountry } from "./services/geolocation";
 import { getUpcomingHolidays } from "./services/holidays";
+import { getAvailableCountries } from "./utils/countries";
 
-function getInitialState(): AustralianStateCode | null {
+function getInitialLocation(): HolidayLocation | null {
   const hash = window.location.hash.slice(1).toUpperCase();
-  const valid: AustralianStateCode[] = [
-    "ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA",
-  ];
-  return valid.includes(hash as AustralianStateCode)
-    ? (hash as AustralianStateCode)
-    : null;
+  if (!hash) return null;
+
+  // Format: "AU" or "AU-QLD"
+  const parts = hash.split("-");
+  if (parts.length === 1 && parts[0]!.length === 2) {
+    return { countryCode: parts[0]!, countryName: "" };
+  }
+  if (parts.length >= 2 && parts[0]!.length === 2) {
+    return {
+      countryCode: parts[0]!,
+      countryName: "",
+      regionCode: hash, // Full code like "AU-QLD"
+    };
+  }
+  return null;
 }
 
 export default function App() {
-  const [selectedState, setSelectedState] = useState<AustralianStateCode | null>(
-    getInitialState
+  const [location, setLocation] = useState<HolidayLocation | null>(
+    getInitialLocation
   );
-  const [detectedState, setDetectedState] = useState<AustralianStateCode | null>(null);
+  const [detectedCountryCode, setDetectedCountryCode] = useState<string | null>(null);
   const [detecting, setDetecting] = useState(false);
   const [activeTab, setActiveTab] = useState<"next" | "optimize">("next");
 
-  // Auto-detect state on mount if none selected
+  // Resolve country name from hash on mount
   useEffect(() => {
-    if (selectedState) return;
+    if (location && !location.countryName) {
+      getAvailableCountries().then((countries) => {
+        const c = countries.find(
+          (c) => c.countryCode === location.countryCode
+        );
+        if (c) {
+          setLocation((prev) =>
+            prev ? { ...prev, countryName: c.name } : prev
+          );
+        }
+      });
+    }
+  }, []);
+
+  // Auto-detect country on mount if none selected
+  useEffect(() => {
+    if (location) return;
     setDetecting(true);
-    detectState()
+    detectCountry()
       .then((result) => {
         if (result) {
-          setDetectedState(result.state);
-          // Prefetch holidays for detected state
-          getUpcomingHolidays(result.state).catch(() => {});
+          setDetectedCountryCode(result.countryCode);
+          getUpcomingHolidays(result.countryCode).catch(() => {});
         }
       })
       .finally(() => setDetecting(false));
-  }, [selectedState]);
+  }, [location]);
 
-  // Prefetch holidays when state is selected
+  // Prefetch holidays when location is selected
   useEffect(() => {
-    if (selectedState) {
-      getUpcomingHolidays(selectedState).catch(() => {});
+    if (location?.countryCode) {
+      getUpcomingHolidays(location.countryCode, location.regionCode).catch(
+        () => {}
+      );
     }
-  }, [selectedState]);
+  }, [location]);
 
-  function handleSelectState(code: AustralianStateCode) {
-    setSelectedState(code);
-    window.location.hash = code;
+  function handleSelectLocation(
+    countryCode: string,
+    countryName: string,
+    regionCode?: string
+  ) {
+    setLocation({ countryCode, countryName, regionCode });
+    window.location.hash = regionCode ?? countryCode;
   }
 
   function handleBack() {
-    setSelectedState(null);
+    setLocation(null);
     setActiveTab("next");
     window.history.replaceState(null, "", " ");
   }
@@ -70,12 +101,12 @@ export default function App() {
             My Next <span className="text-brand-yellow">Public Holiday</span>
           </span>
         </button>
-        {selectedState && (
+        {location && (
           <button
             onClick={handleBack}
             className="cursor-pointer text-xs font-medium text-brand-grey transition-colors hover:text-brand-yellow"
           >
-            Change state
+            Change location
           </button>
         )}
       </header>
@@ -87,10 +118,10 @@ export default function App() {
             className="transition-opacity duration-300"
             style={{ opacity: 1 }}
           >
-            {!selectedState ? (
-              <StateSelect
-                onSelect={handleSelectState}
-                detectedState={detectedState}
+            {!location || !location.countryName ? (
+              <LocationSelect
+                onSelect={handleSelectLocation}
+                detectedCountryCode={detectedCountryCode}
                 detecting={detecting}
               />
             ) : (
@@ -120,9 +151,19 @@ export default function App() {
                 </div>
 
                 {activeTab === "next" ? (
-                  <HolidayDisplay stateCode={selectedState} onBack={handleBack} />
+                  <HolidayDisplay
+                    countryCode={location.countryCode}
+                    countryName={location.countryName}
+                    regionCode={location.regionCode}
+                    onBack={handleBack}
+                  />
                 ) : (
-                  <LeaveOptimizer stateCode={selectedState} onBack={handleBack} />
+                  <LeaveOptimizer
+                    countryCode={location.countryCode}
+                    countryName={location.countryName}
+                    regionCode={location.regionCode}
+                    onBack={handleBack}
+                  />
                 )}
               </>
             )}
