@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#19191A"/>
+  <!-- Calendar body -->
+  <rect x="96" y="144" width="320" height="272" rx="24" fill="#F1C40F"/>
+  <!-- Calendar top bar -->
+  <rect x="96" y="144" width="320" height="72" rx="24" fill="#F1C40F"/>
+  <rect x="96" y="192" width="320" height="24" fill="#F1C40F"/>
+  <!-- Calendar rings -->
+  <rect x="168" y="112" width="24" height="64" rx="12" fill="#ECF0F1"/>
+  <rect x="320" y="112" width="24" height="64" rx="12" fill="#ECF0F1"/>
+  <!-- Calendar header dark strip -->
+  <rect x="96" y="144" width="320" height="72" rx="24" fill="#19191A" opacity="0.15"/>
+  <rect x="96" y="192" width="320" height="24" fill="#19191A" opacity="0.15"/>
+  <!-- Star/holiday marker -->
+  <polygon points="256,260 270,300 312,300 278,324 290,364 256,340 222,364 234,324 200,300 242,300" fill="#19191A"/>
+</svg>
