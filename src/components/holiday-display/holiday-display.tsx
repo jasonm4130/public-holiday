@@ -23,7 +23,7 @@ export function HolidayDisplay({
 
   useEffect(() => {
     let cancelled = false;
-    setHolidays(null);
+    setHolidays(null); // eslint-disable-line react-hooks/set-state-in-effect -- intentional reset on dep change
     setError(null);
 
     getUpcomingHolidays(countryCode, regionCode)
@@ -31,8 +31,7 @@ export function HolidayDisplay({
         if (!cancelled) setHolidays(data);
       })
       .catch((err) => {
-        if (!cancelled)
-          setError(err instanceof Error ? err.message : "Failed to load holidays");
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load holidays");
       });
 
     return () => {
@@ -75,16 +74,16 @@ export function HolidayDisplay({
 
   return (
     <div className="animate-fade-in">
-      <p className="mb-1 text-sm font-medium tracking-widest text-brand-grey uppercase">
+      <p className="text-muted mb-1 text-sm font-medium tracking-widest uppercase">
         {locationLabel}
       </p>
-      <h1 className="mb-4 text-2xl font-bold text-brand-white/80">Your next holiday</h1>
+      <h1 className="text-fg/80 mb-4 text-2xl font-bold">Your next holiday</h1>
 
       {/* Countdown */}
       {countdown && (
         <div className="mb-4">
           {countdown.days === 0 ? (
-            <div className="text-3xl font-extrabold text-brand-yellow">🎉 It's today!</div>
+            <div className="text-accent-fg text-3xl font-extrabold">🎉 It's today!</div>
           ) : (
             <div className="flex justify-center gap-3">
               <CountdownUnit value={countdown.days} label="days" />
@@ -96,28 +95,26 @@ export function HolidayDisplay({
       )}
 
       {/* Next holiday */}
-      <div className="mb-2 rounded-xl border border-brand-yellow/20 bg-brand-yellow/5 p-6">
+      <div className="border-accent/20 bg-accent/5 mb-2 rounded-xl border p-6">
         <h2 className="mb-1 text-4xl font-extrabold sm:text-5xl">
           {format(nextHoliday!.date, "EEE do MMM")}
         </h2>
-        <p className="text-sm text-brand-grey">{format(nextHoliday!.date, "yyyy")}</p>
-        <h3 className="mt-3 text-2xl font-bold text-brand-white/90">{nextHoliday!.localName}</h3>
+        <p className="text-muted text-sm">{format(nextHoliday!.date, "yyyy")}</p>
+        <h3 className="text-fg/90 mt-3 text-2xl font-bold">{nextHoliday!.localName}</h3>
       </div>
 
       {/* Upcoming list */}
       {holidays.length > 1 && (
         <div className="mx-auto mt-8 max-w-md">
-          <h4 className="mb-3 text-xs font-bold tracking-widest uppercase text-brand-grey">
-            Coming up
-          </h4>
+          <h4 className="text-muted mb-3 text-xs font-bold tracking-widest uppercase">Coming up</h4>
           <ul className="space-y-1.5 text-left">
             {holidays.slice(1, 8).map((h) => (
               <li
                 key={h.date.toISOString() + h.name}
-                className="flex items-center justify-between rounded-lg bg-brand-white/5 px-4 py-2.5 transition-colors hover:bg-brand-white/8"
+                className="bg-fg/5 hover:bg-fg/8 flex items-center justify-between rounded-lg px-4 py-2.5 transition-colors"
               >
-                <span className="text-sm text-brand-white/90">{h.localName}</span>
-                <span className="text-xs font-medium text-brand-grey">
+                <span className="text-fg/90 text-sm">{h.localName}</span>
+                <span className="text-muted text-xs font-medium">
                   {format(h.date, "EEE d MMM")}
                 </span>
               </li>
@@ -132,10 +129,10 @@ export function HolidayDisplay({
 function CountdownUnit({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-brand-yellow/10 text-3xl font-extrabold tabular-nums text-brand-yellow sm:h-20 sm:w-20 sm:text-4xl">
+      <div className="bg-accent/10 text-accent-fg flex h-16 w-16 items-center justify-center rounded-xl text-3xl font-extrabold tabular-nums sm:h-20 sm:w-20 sm:text-4xl">
         {value}
       </div>
-      <span className="mt-1 text-xs font-medium text-brand-grey">{label}</span>
+      <span className="text-muted mt-1 text-xs font-medium">{label}</span>
     </div>
   );
 }
@@ -143,10 +140,10 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
 function LoadingSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="mx-auto h-4 w-32 animate-pulse rounded bg-brand-grey/20" />
-      <div className="mx-auto h-8 w-48 animate-pulse rounded bg-brand-grey/20" />
-      <div className="mx-auto h-16 w-64 animate-pulse rounded-xl bg-brand-grey/10" />
-      <div className="mx-auto h-6 w-40 animate-pulse rounded bg-brand-grey/20" />
+      <div className="bg-muted/20 mx-auto h-4 w-32 animate-pulse rounded" />
+      <div className="bg-muted/20 mx-auto h-8 w-48 animate-pulse rounded" />
+      <div className="bg-muted/10 mx-auto h-16 w-64 animate-pulse rounded-xl" />
+      <div className="bg-muted/20 mx-auto h-6 w-40 animate-pulse rounded" />
     </div>
   );
 }
@@ -156,8 +153,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="cursor-pointer rounded-lg bg-brand-grey/20 px-5 py-2.5 text-sm font-bold text-brand-yellow
-                 transition-all hover:bg-brand-grey/30 hover:shadow-lg"
+      className="bg-muted/20 text-accent-fg hover:bg-muted/30 cursor-pointer rounded-lg px-5 py-2.5 text-sm font-bold transition-all hover:shadow-lg"
     >
       ← Change location
     </button>

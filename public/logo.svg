@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="cal" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#F4D03F"/>
-      <stop offset="100%" stop-color="#D4AC0D"/>
+      <stop offset="0%" stop-color="#F09880"/>
+      <stop offset="100%" stop-color="#E86A4A"/>
     </linearGradient>
   </defs>
   <!-- Background -->
-  <rect width="512" height="512" rx="108" fill="#19191A"/>
+  <rect width="512" height="512" rx="108" fill="#0D2137"/>
   <!-- Calendar body -->
   <rect x="88" y="152" width="336" height="268" rx="28" fill="url(#cal)"/>
   <!-- Calendar header -->
-  <rect x="88" y="152" width="336" height="80" rx="28" fill="#19191A" opacity="0.12"/>
-  <rect x="88" y="208" width="336" height="24" fill="#19191A" opacity="0.12"/>
+  <rect x="88" y="152" width="336" height="80" rx="28" fill="#0D2137" opacity="0.12"/>
+  <rect x="88" y="208" width="336" height="24" fill="#0D2137" opacity="0.12"/>
   <!-- Rings -->
-  <rect x="168" y="116" width="28" height="72" rx="14" fill="#ECF0F1"/>
-  <rect x="316" y="116" width="28" height="72" rx="14" fill="#ECF0F1"/>
+  <rect x="168" y="116" width="28" height="72" rx="14" fill="#F3EDE4"/>
+  <rect x="316" y="116" width="28" height="72" rx="14" fill="#F3EDE4"/>
   <!-- Checkmark (next holiday confirmed) -->
-  <path d="M200 320 L244 364 L328 272" fill="none" stroke="#19191A" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M200 320 L244 364 L328 272" fill="none" stroke="#0D2137" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

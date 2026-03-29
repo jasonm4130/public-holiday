@@ -7,6 +7,15 @@ import { detectCountry } from "./services/geolocation";
 import { getUpcomingHolidays } from "./services/holidays";
 import { getAvailableCountries } from "./utils/countries";
 
+function getInitialTheme(): "light" | "dark" {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("theme");
+    if (stored === "dark" || stored === "light") return stored;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return "light";
+}
+
 function getInitialLocation(): HolidayLocation | null {
   const hash = window.location.hash.slice(1).toUpperCase();
   if (!hash) return null;
@@ -27,27 +36,29 @@ function getInitialLocation(): HolidayLocation | null {
 }
 
 export default function App() {
-  const [location, setLocation] = useState<HolidayLocation | null>(
-    getInitialLocation
-  );
+  const [theme, setTheme] = useState<"light" | "dark">(getInitialTheme);
+  const [location, setLocation] = useState<HolidayLocation | null>(getInitialLocation);
   const [detectedCountryCode, setDetectedCountryCode] = useState<string | null>(null);
   const [detecting, setDetecting] = useState(false);
   const [activeTab, setActiveTab] = useState<"next" | "optimize">("next");
+
+  // Apply theme class
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   // Resolve country name from hash on mount
   useEffect(() => {
     if (location && !location.countryName) {
       getAvailableCountries().then((countries) => {
-        const c = countries.find(
-          (c) => c.countryCode === location.countryCode
-        );
+        const c = countries.find((c) => c.countryCode === location.countryCode);
         if (c) {
-          setLocation((prev) =>
-            prev ? { ...prev, countryName: c.name } : prev
-          );
+          setLocation((prev) => (prev ? { ...prev, countryName: c.name } : prev));
         }
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-detect country on mount if none selected
@@ -67,17 +78,11 @@ export default function App() {
   // Prefetch holidays when location is selected
   useEffect(() => {
     if (location?.countryCode) {
-      getUpcomingHolidays(location.countryCode, location.regionCode).catch(
-        () => {}
-      );
+      getUpcomingHolidays(location.countryCode, location.regionCode).catch(() => {});
     }
   }, [location]);
 
-  function handleSelectLocation(
-    countryCode: string,
-    countryName: string,
-    regionCode?: string
-  ) {
+  function handleSelectLocation(countryCode: string, countryName: string, regionCode?: string) {
     setLocation({ countryCode, countryName, regionCode });
     window.location.hash = regionCode ?? countryCode;
   }
@@ -89,7 +94,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-brand-black text-brand-yellow">
+    <div className="bg-page text-fg flex min-h-screen w-full flex-col transition-colors duration-300">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-3 sm:px-6">
         <button
@@ -98,26 +103,60 @@ export default function App() {
         >
           <img src="/logo.svg" alt="" className="h-8 w-8" />
           <span className="text-sm font-bold tracking-wide">
-            My Next <span className="text-brand-yellow">Public Holiday</span>
+            My Next <span className="text-accent-fg">Public Holiday</span>
           </span>
         </button>
-        {location && (
+        <div className="flex items-center gap-3">
+          {location && (
+            <button
+              onClick={handleBack}
+              className="text-muted hover:text-accent-fg cursor-pointer text-xs font-medium transition-colors"
+            >
+              Change location
+            </button>
+          )}
           <button
-            onClick={handleBack}
-            className="cursor-pointer text-xs font-medium text-brand-grey transition-colors hover:text-brand-yellow"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="text-muted hover:text-accent-fg flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+            aria-label="Toggle theme"
           >
-            Change location
+            {theme === "dark" ? (
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                />
+              </svg>
+            )}
           </button>
-        )}
+        </div>
       </header>
 
       {/* Main content */}
       <main className="flex flex-1 items-center justify-center px-4 pb-16">
         <div className="w-full max-w-2xl text-center">
-          <div
-            className="transition-opacity duration-300"
-            style={{ opacity: 1 }}
-          >
+          <div className="transition-opacity duration-300" style={{ opacity: 1 }}>
             {!location || !location.countryName ? (
               <LocationSelect
                 onSelect={handleSelectLocation}
@@ -132,8 +171,8 @@ export default function App() {
                     onClick={() => setActiveTab("next")}
                     className={`cursor-pointer rounded-t-lg px-6 py-3 text-sm font-bold transition-colors ${
                       activeTab === "next"
-                        ? "bg-brand-yellow text-brand-black"
-                        : "bg-brand-grey/30 text-brand-yellow hover:bg-brand-grey/50"
+                        ? "bg-accent text-ocean-deep"
+                        : "bg-muted/20 text-accent-fg hover:bg-muted/30"
                     }`}
                   >
                     Next Holiday
@@ -142,8 +181,8 @@ export default function App() {
                     onClick={() => setActiveTab("optimize")}
                     className={`cursor-pointer rounded-t-lg px-6 py-3 text-sm font-bold transition-colors ${
                       activeTab === "optimize"
-                        ? "bg-brand-yellow text-brand-black"
-                        : "bg-brand-grey/30 text-brand-yellow hover:bg-brand-grey/50"
+                        ? "bg-accent text-ocean-deep"
+                        : "bg-muted/20 text-accent-fg hover:bg-muted/30"
                     }`}
                   >
                     Optimize Leave
@@ -172,13 +211,13 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="px-4 py-4 text-center text-xs text-brand-grey/60">
+      <footer className="text-muted/60 px-4 py-4 text-center text-xs">
         Holiday data from{" "}
         <a
           href="https://date.nager.at/"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline transition-colors hover:text-brand-grey"
+          className="hover:text-muted underline transition-colors"
         >
           Nager.Date API
         </a>
@@ -188,7 +227,7 @@ export default function App() {
           href="https://github.com/jasonm4130/public-holiday"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline transition-colors hover:text-brand-grey"
+          className="hover:text-muted underline transition-colors"
         >
           GitHub
         </a>

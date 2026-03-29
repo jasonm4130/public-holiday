@@ -1,9 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { Country, Region } from "../../types/holiday";
-import {
-  getAvailableCountries,
-  getRegionsForCountry,
-} from "../../utils/countries";
+import { getAvailableCountries, getRegionsForCountry } from "../../utils/countries";
 
 interface LocationSelectProps {
   onSelect: (countryCode: string, countryName: string, regionCode?: string) => void;
@@ -11,16 +8,11 @@ interface LocationSelectProps {
   detecting: boolean;
 }
 
-export function LocationSelect({
-  onSelect,
-  detectedCountryCode,
-  detecting,
-}: LocationSelectProps) {
+export function LocationSelect({ onSelect, detectedCountryCode, detecting }: LocationSelectProps) {
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [regions, setRegions] = useState<Region[]>([]);
   const [loadingRegions, setLoadingRegions] = useState(false);
-  const [detectedCountryName, setDetectedCountryName] = useState<string | null>(null);
 
   // Fetch country list on mount
   useEffect(() => {
@@ -29,12 +21,10 @@ export function LocationSelect({
       .catch(() => {});
   }, []);
 
-  // Resolve detected country name
-  useEffect(() => {
-    if (detectedCountryCode && countries.length > 0) {
-      const c = countries.find((c) => c.countryCode === detectedCountryCode);
-      if (c) setDetectedCountryName(c.name);
-    }
+  // Derive detected country name from list
+  const detectedCountryName = useMemo(() => {
+    if (!detectedCountryCode || countries.length === 0) return null;
+    return countries.find((c) => c.countryCode === detectedCountryCode)?.name ?? null;
   }, [detectedCountryCode, countries]);
 
   // Load regions when country selected
@@ -54,6 +44,7 @@ export function LocationSelect({
       })
       .catch(() => setRegions([]))
       .finally(() => setLoadingRegions(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCountry]);
 
   function handleCountrySelect(code: string) {
@@ -80,34 +71,38 @@ export function LocationSelect({
         <h1 className="mb-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
           {selectedCountry.name}
         </h1>
-        <p className="mb-8 text-lg text-brand-white/70">
-          Select your region for local holidays
-        </p>
+        <p className="text-fg/70 mb-8 text-lg">Select your region for local holidays</p>
 
         <div className="mx-auto max-w-sm">
           <button
             onClick={() => onSelect(selectedCountry.countryCode, selectedCountry.name)}
-            className="mb-4 w-full cursor-pointer rounded-lg border border-brand-yellow/20 bg-brand-yellow/5 px-4 py-3 text-sm font-medium text-brand-yellow transition-all hover:border-brand-yellow/40 hover:bg-brand-yellow/10"
+            className="border-accent/20 bg-accent/5 text-accent-fg hover:border-accent/40 hover:bg-accent/10 mb-4 w-full cursor-pointer rounded-lg border px-4 py-3 text-sm font-medium transition-all"
           >
             Show all national holidays
           </button>
 
-          <label className="mb-2 block text-left text-xs font-medium text-brand-grey uppercase tracking-wider">
+          <label
+            htmlFor="region-select"
+            className="text-muted mb-2 block text-left text-xs font-medium tracking-wider uppercase"
+          >
             Or pick a region
           </label>
           <div className="relative">
             <select
+              id="region-select"
               defaultValue=""
               onChange={(e) => {
                 if (e.target.value) handleRegionSelect(e.target.value);
               }}
-              className="h-12 w-full cursor-pointer appearance-none rounded-lg bg-brand-white
-                         pr-10 pl-4 text-sm text-brand-black shadow-lg outline-none
-                         transition-shadow focus:ring-2 focus:ring-brand-yellow focus:shadow-brand-yellow/20"
+              className="bg-surface text-fg focus:ring-accent focus:shadow-accent/20 h-12 w-full cursor-pointer appearance-none rounded-lg pr-10 pl-4 text-sm shadow-lg transition-shadow outline-none focus:ring-2"
             >
-              <option value="" disabled>Choose region…</option>
+              <option value="" disabled>
+                Choose region…
+              </option>
               {regions.map((r) => (
-                <option key={r.code} value={r.code}>{r.name}</option>
+                <option key={r.code} value={r.code}>
+                  {r.name}
+                </option>
               ))}
             </select>
             <SelectArrow />
@@ -115,7 +110,7 @@ export function LocationSelect({
 
           <button
             onClick={() => setSelectedCountry(null)}
-            className="mt-4 cursor-pointer text-xs font-medium text-brand-grey transition-colors hover:text-brand-yellow"
+            className="text-muted hover:text-accent-fg mt-4 cursor-pointer text-xs font-medium transition-colors"
           >
             ← Change country
           </button>
@@ -134,14 +129,12 @@ export function LocationSelect({
       <h1 className="mb-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
         Your next public holiday
       </h1>
-      <p className="mb-8 text-lg text-brand-white/70">
-        Find it instantly. Optimise your leave.
-      </p>
+      <p className="text-fg/70 mb-8 text-lg">Find it instantly. Optimise your leave.</p>
 
       {/* Auto-detected country suggestion */}
       {detecting && (
-        <div className="mx-auto mb-6 max-w-sm animate-pulse text-sm text-brand-grey">
-          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-brand-grey border-t-brand-yellow" />{" "}
+        <div className="text-muted mx-auto mb-6 max-w-sm animate-pulse text-sm">
+          <span className="border-muted border-t-accent inline-block h-4 w-4 animate-spin rounded-full border-2" />{" "}
           Detecting your location…
         </div>
       )}
@@ -149,17 +142,37 @@ export function LocationSelect({
       {detectedCountryName && !detecting && (
         <button
           onClick={() => handleCountrySelect(detectedCountryCode!)}
-          className="mx-auto mb-6 flex cursor-pointer items-center gap-3 rounded-xl border border-brand-yellow/20 bg-brand-yellow/5 px-6 py-4 transition-all hover:border-brand-yellow/40 hover:bg-brand-yellow/10"
+          className="border-accent/20 bg-accent/5 hover:border-accent/40 hover:bg-accent/10 mx-auto mb-6 flex cursor-pointer items-center gap-3 rounded-xl border px-6 py-4 transition-all"
         >
-          <svg className="h-5 w-5 text-brand-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          <svg
+            className="text-accent-fg h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+            />
           </svg>
           <div className="text-left">
-            <div className="text-xs text-brand-grey">It looks like you're in</div>
-            <div className="font-bold text-brand-yellow">{detectedCountryName}</div>
+            <div className="text-muted text-xs">It looks like you're in</div>
+            <div className="text-accent-fg font-bold">{detectedCountryName}</div>
           </div>
-          <svg className="ml-2 h-4 w-4 text-brand-grey" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="text-muted ml-2 h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -167,7 +180,7 @@ export function LocationSelect({
 
       {/* Country selector */}
       <div className="mx-auto max-w-sm">
-        <label className="mb-2 block text-left text-xs font-medium text-brand-grey uppercase tracking-wider">
+        <label className="text-muted mb-2 block text-left text-xs font-medium tracking-wider uppercase">
           {detectedCountryName ? "Or select a different country" : "Select your country"}
         </label>
         <div className="relative">
@@ -176,9 +189,7 @@ export function LocationSelect({
             onChange={(e) => {
               if (e.target.value) handleCountrySelect(e.target.value);
             }}
-            className="h-12 w-full cursor-pointer appearance-none rounded-lg bg-brand-white
-                       pr-10 pl-4 text-sm text-brand-black shadow-lg outline-none
-                       transition-shadow focus:ring-2 focus:ring-brand-yellow focus:shadow-brand-yellow/20"
+            className="bg-surface text-fg focus:ring-accent focus:shadow-accent/20 h-12 w-full cursor-pointer appearance-none rounded-lg pr-10 pl-4 text-sm shadow-lg transition-shadow outline-none focus:ring-2"
           >
             <option value="" disabled>
               {countries.length === 0 ? "Loading countries…" : "Choose country…"}
@@ -193,17 +204,15 @@ export function LocationSelect({
         </div>
 
         {loadingRegions && (
-          <div className="mt-4 animate-pulse text-sm text-brand-grey">
-            Loading regions…
-          </div>
+          <div className="text-muted mt-4 animate-pulse text-sm">Loading regions…</div>
         )}
       </div>
 
-      <div className="mx-auto mt-10 max-w-md text-center text-sm leading-relaxed text-brand-white/50">
+      <div className="text-fg/50 mx-auto mt-10 max-w-md text-center text-sm leading-relaxed">
         <p>
           See your next public holiday instantly, or use the{" "}
-          <strong className="text-brand-yellow/80">Leave Optimizer</strong> to
-          find the best days to take off for maximum time away.
+          <strong className="text-accent-fg/80">Leave Optimizer</strong> to find the best days to
+          take off for maximum time away.
         </p>
       </div>
     </div>
@@ -212,8 +221,8 @@ export function LocationSelect({
 
 function SelectArrow() {
   return (
-    <div className="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-lg bg-brand-yellow">
-      <svg className="h-4 w-4 text-brand-black" fill="currentColor" viewBox="0 0 20 20">
+    <div className="bg-accent pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-lg">
+      <svg className="text-ocean-deep h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
         <path
           fillRule="evenodd"
           d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"

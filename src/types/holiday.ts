@@ -47,3 +47,11 @@ export interface LeaveBlock {
   holidays: PublicHoliday[];
   description: string;
 }
+
+/** A complete leave plan: one or more blocks using the full budget */
+export interface LeaveOption {
+  blocks: LeaveBlock[];
+  totalLeaveDaysUsed: number;
+  totalDaysOff: number;
+  overallEfficiency: number;
+}

@@ -21,15 +21,11 @@ const regionsCache = new Map<string, Region[]>();
  * Extract available regions for a country from its holiday data.
  * Regions are derived from the `counties` field (e.g. "AU-QLD" → "QLD").
  */
-export async function getRegionsForCountry(
-  countryCode: string
-): Promise<Region[]> {
+export async function getRegionsForCountry(countryCode: string): Promise<Region[]> {
   if (regionsCache.has(countryCode)) return regionsCache.get(countryCode)!;
 
   const year = new Date().getFullYear();
-  const res = await fetch(
-    `${API_BASE}/publicholidays/${year}/${countryCode}`
-  );
+  const res = await fetch(`${API_BASE}/publicholidays/${year}/${countryCode}`);
   if (!res.ok) return [];
 
   const data: { counties: string[] | null }[] = await res.json();
@@ -41,21 +37,16 @@ export async function getRegionsForCountry(
     }
   }
 
-  const regions: Region[] = [...regionCodes]
-    .sort()
-    .map((code) => ({
-      code,
-      name: code.replace(`${countryCode}-`, ""),
-    }));
+  const regions: Region[] = [...regionCodes].sort().map((code) => ({
+    code,
+    name: code.replace(`${countryCode}-`, ""),
+  }));
 
   regionsCache.set(countryCode, regions);
   return regions;
 }
 
-export function getLocationLabel(
-  countryName: string,
-  regionCode?: string
-): string {
+export function getLocationLabel(countryName: string, regionCode?: string): string {
   if (!regionCode) return countryName;
   const regionShort = regionCode.includes("-")
     ? regionCode.split("-").slice(1).join("-")

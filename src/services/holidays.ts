@@ -6,10 +6,7 @@ const API_BASE = "https://date.nager.at/api/v3/publicholidays";
 // Cache keyed by "countryCode-year"
 const cache = new Map<string, PublicHoliday[]>();
 
-async function fetchHolidaysForYear(
-  countryCode: string,
-  year: number
-): Promise<PublicHoliday[]> {
+async function fetchHolidaysForYear(countryCode: string, year: number): Promise<PublicHoliday[]> {
   const key = `${countryCode}-${year}`;
   if (cache.has(key)) return cache.get(key)!;
 
@@ -33,7 +30,7 @@ async function fetchHolidaysForYear(
 export async function getHolidaysForLocation(
   countryCode: string,
   year: number,
-  regionCode?: string
+  regionCode?: string,
 ): Promise<PublicHoliday[]> {
   // Fetch current year + next year for Dec→Jan transitions
   const [currentYear, nextYear] = await Promise.all([
@@ -55,13 +52,11 @@ export async function getHolidaysForLocation(
 
 export async function getUpcomingHolidays(
   countryCode: string,
-  regionCode?: string
+  regionCode?: string,
 ): Promise<PublicHoliday[]> {
   const now = startOfDay(new Date());
   const year = now.getFullYear();
   const holidays = await getHolidaysForLocation(countryCode, year, regionCode);
 
-  return holidays.filter(
-    (h) => isAfter(h.date, now) || h.date.getTime() === now.getTime()
-  );
+  return holidays.filter((h) => isAfter(h.date, now) || h.date.getTime() === now.getTime());
 }
