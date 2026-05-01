@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc -b && vite build",
+    "deploy": "npm run build && wrangler deploy",
+    "dev": "vite",
+    "dev:edge": "wrangler dev",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -39,6 +41,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.57.2",
     "vite": "^6.3.1",
-    "vitest": "^3.1.1"
+    "vitest": "^3.1.1",
+    "wrangler": "^4.87.0"
   }
 }

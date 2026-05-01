@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "public-holiday",
+  "compatibility_date": "2026-03-29",
+  "workers_dev": false,
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [
+    { "pattern": "mynextpublicholiday.com", "custom_domain": true },
+    { "pattern": "www.mynextpublicholiday.com", "custom_domain": true }
+  ]
+}
